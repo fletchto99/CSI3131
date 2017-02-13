@@ -43,8 +43,7 @@ public class MBCanvas extends Canvas {
         if ((maxi - mrect.x) <= mg.minBoxSize) {
             // Can now do the painting
             // Threads have more overhead compared to a thread pool
-            //Thread t = new Thread(mbp);
-            //t.start();
+            //(new Thread(new MBPaint(this, mg, mrect))).start();
             pool.execute(new MBPaint(this, mg, mrect));
             return;
         }
