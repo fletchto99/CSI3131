@@ -8,8 +8,7 @@ class Client implements Runnable {
     private int port;
 
     public Client(String toKill) {
-        this.toKill = toKill;
-        this.port = ServerInterface.DEFAULT_PORT;
+        this(toKill, ServerInterface.DEFAULT_PORT);
     }
 
     public Client(String toKill, int port) {
@@ -29,15 +28,16 @@ class Client implements Runnable {
                     .parallelStream() //exectute in parallel
                     .filter(line -> line.contains(toKill)) //remove any that don't meet our criteria
                     .map(line -> Integer.parseInt(line.trim().split("\\s+")[0])) //filter to pid only
-                    .peek(pid -> {
+                    .filter(pid -> {
                         System.out.println("[Client] Killing pid " + pid);
                         try {
-                            new ProcessBuilder("kill", Integer.toString(pid)).start();
-                        } catch (IOException e) {
+                            return new ProcessBuilder("kill", Integer.toString(pid)).start().waitFor() == 0;
+                        } catch (Exception e) {
                             System.out.println("[Client] Error killing pid " + pid);
                         }
+                        return false;
                     }).count();
-            System.out.println("[Client] Attempted to kill " + killed + " processes with the name " + toKill);
+            System.out.println("[Client] Killed " + killed + " processes with the name " + toKill);
         } catch (Exception e) {
             System.out.println("[Client] An error has occurred");
         }
