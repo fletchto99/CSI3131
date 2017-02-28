@@ -26,6 +26,7 @@ public class Lab3 {
         try {
             fer.join();
         } catch (InterruptedException e) {
+            //ignored
         }
 
         // Wait until ferry terminates.
@@ -64,6 +65,8 @@ class Auto extends Thread { // Class for the auto threads.
             System.out.println("Auto " + id_auto + " arrives at port " + port);
 
             Semaphore hold; //hold until the cars can board
+
+            //determine the port the and set the semaphore to that port
             if (port == Lab3.PORT0) {
                 hold = fry.getPort0();
             } else {
@@ -71,6 +74,7 @@ class Auto extends Thread { // Class for the auto threads.
             }
 
             try {
+                //acquire a hold on that semaphore to ensure our position
                 hold.acquire();
             } catch (InterruptedException e) {
                 break;
@@ -79,15 +83,19 @@ class Auto extends Thread { // Class for the auto threads.
             // Board
             System.out.println("Auto " + id_auto + " boards on the ferry at port " + port);
             fry.addLoad();  // increment the ferry load
+
+            //check if the ferry is full and if so head out
             if (fry.getLoad() == Lab3.MAXLOAD) {
-                fry.getTravel().release(); //leave for the other port once full
+                fry.getTravel().release();
             } else {
+                //otherwise release the hold allowing the next car/ambo to load on
                 hold.release();
             }
 
             // Arrive at the next port
             port = 1 - port;
 
+            //we've switched ports so focus the new semaphore
             if (port == Lab3.PORT0) {
                 hold = fry.getPort0();
             } else {
@@ -104,6 +112,7 @@ class Auto extends Thread { // Class for the auto threads.
             System.out.println("Auto " + id_auto + " disembarks from ferry at port " + port);
             fry.reduceLoad();   // Reduce load
 
+            //if the ferry is empty allow cars to board
             if (fry.getLoad() == 0) {
                 hold.release(); // signal to cars to board
             } else {
@@ -141,6 +150,8 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
             System.out.println("Ambulance arrives at port " + port);
 
             Semaphore hold;
+
+            //set the hold to the port we are at
             if (port == Lab3.PORT0) {
                 hold = fry.getPort0();
             } else {
@@ -149,6 +160,7 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
 
             //Board
             try {
+                //aquire a hold on that port
                 hold.acquire();
             } catch (InterruptedException e) {
                 break;
@@ -161,6 +173,7 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
             // Arrive at the next port
             port = 1 - port;
 
+            //determine the new port
             if(port == Lab3.PORT0) {
                 hold = fry.getPort0();
             } else {
@@ -169,6 +182,7 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
 
             //Disembark
             try {
+                //hold on the disembarkment -- until we arrive at the new port
                 fry.getDisembark().acquire();
             } catch (InterruptedException e) {
                 break;
@@ -179,9 +193,11 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
             fry.reduceLoad();   // Reduce load
 
             if(fry.getLoad() == 0) {
-                hold.release();  // signal to cars to board
+                //allow cars to board
+                hold.release();
             } else {
-                fry.getDisembark().release();  // signal car to disembark
+                //allow the next car to disembark
+                fry.getDisembark().release();
             }
 
             // Terminate
@@ -219,6 +235,7 @@ class Ferry extends Thread { // The ferry Class
         int i;
         System.out.println("Start at port " + port + " with a load of " + load + " vehicles");
 
+        //determine which port we are at and allow cars to board
         if (port == Lab3.PORT0) {
             port0.release();
         } else {
@@ -227,7 +244,12 @@ class Ferry extends Thread { // The ferry Class
 
         // numCrossings crossings in our day
         for (i = 0; i < numCrossings; i++) {
-            travel.acquireUninterruptibly();
+            //hold while we travel
+            try {
+                travel.acquire();
+            } catch (InterruptedException e) {
+                //ignored
+            }
 
             // The crossing
             System.out.println("Departure from port " + port + " with a load of " + load + " vehicles");
@@ -255,6 +277,8 @@ class Ferry extends Thread { // The ferry Class
     public void addLoad() {
         load = load + 1;
     }
+
+    //Some getters to access the semaphores used to control the ferry
 
     public void reduceLoad() {
         load = load - 1;
