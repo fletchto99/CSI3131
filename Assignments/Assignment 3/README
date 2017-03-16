@@ -1,0 +1,1 @@
+Runs all of the required simulations in a thread pool and then outputs the results to a Simulations.log file.

@@ -174,7 +174,7 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
             port = 1 - port;
 
             //determine the new port
-            if(port == Lab3.PORT0) {
+            if (port == Lab3.PORT0) {
                 hold = fry.getPort0();
             } else {
                 hold = fry.getPort1();
@@ -192,7 +192,7 @@ class Ambulance extends Thread { // the Class for the Ambulance thread
             System.out.println("Ambulance disembarks the ferry at port " + port);
             fry.reduceLoad();   // Reduce load
 
-            if(fry.getLoad() == 0) {
+            if (fry.getLoad() == 0) {
                 //allow cars to board
                 hold.release();
             } else {
